@@ -6,18 +6,25 @@ export default
 class BallAndStick extends BaseDisplay {
 
   constructor(canvas) {
-    this.light = false;
+    this.lights = [];
     super(canvas);
   }
 
   drawLight() {
-    var light = new LiThree.Light.Point();
 
-    light.position.x = -30;
-    light.position.z = -60;
-    light.position.y = -30;
+    var light2 = new LiThree.Light.Point();
 
-    this.light = light;
+    light2.position.x = 30;
+    light2.position.z = 60;
+    light2.position.y = 30;
+
+    var light1 = new LiThree.Light.Point();
+
+    light1.position.x = -30;
+    light1.position.z = -60;
+    light1.position.y = -30;
+
+    this.lights = [light1, light2];
   }
 
   drawAtom(atom) {
@@ -136,13 +143,18 @@ class BallAndStick extends BaseDisplay {
   up() {
     var world = renderer.world;
 
-    world.add(this.light);
+    for(var i in this.lights) {
+      world.add(this.lights[i]);
+    }
   }
 
   down() {
     var world = renderer.world;
 
-    world.remove(this.light);
+    for(var i in this.lights) {
+      world.remove(this.lights[i]);
+    }
+
   }
 
 }

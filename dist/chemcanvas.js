@@ -51,6 +51,9 @@ var Canvas = (function () {
     this._display = false;
     this._displays = [];
 
+    this._mode = false;
+    this._modes = [];
+
     this._attachInteractive();
   }
 
@@ -87,6 +90,26 @@ var Canvas = (function () {
       enumerable: true,
       configurable: true
     },
+    setMode: {
+      value: function setMode(mode) {
+        for (var i in this._modes) {
+          var _mode = this._modes[i];
+
+          if (_mode instanceof mode) {
+            this._mode = _mode;
+            this._mode.up();
+            return;
+          }
+        }
+
+        this._mode = new mode(this);
+        this._mode.create();
+        this._modes.push(this._mode);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
     setDisplay: {
       value: function setDisplay(display) {
         for (var i in this._displays) {
@@ -94,6 +117,7 @@ var Canvas = (function () {
 
           if (_display instanceof display) {
             this._display = _display;
+            this._display.up();
             return;
           }
         }
@@ -121,6 +145,7 @@ var Canvas = (function () {
       value: function show() {
         this.renderer.draw();
         var _this = this;
+
         requestAnimationFrame(function () {
           _this.show();
         });
@@ -156,7 +181,7 @@ var BAS_KEY = "ball-and-stick";
 
 var BallAndStick = (function (BaseDisplay) {
   function BallAndStick(canvas) {
-    this.light = false;
+    this.lights = [];
     _get(Object.getPrototypeOf(BallAndStick.prototype), "constructor", this).call(this, canvas);
   }
 
@@ -165,13 +190,19 @@ var BallAndStick = (function (BaseDisplay) {
   _prototypeProperties(BallAndStick, null, {
     drawLight: {
       value: function drawLight() {
-        var light = new LiThree.Light.Point();
+        var light2 = new LiThree.Light.Point();
 
-        light.position.x = -30;
-        light.position.z = -60;
-        light.position.y = -30;
+        light2.position.x = 30;
+        light2.position.z = 60;
+        light2.position.y = 30;
 
-        this.light = light;
+        var light1 = new LiThree.Light.Point();
+
+        light1.position.x = -30;
+        light1.position.z = -60;
+        light1.position.y = -30;
+
+        this.lights = [light1, light2];
       },
       writable: true,
       enumerable: true,
@@ -309,7 +340,9 @@ var BallAndStick = (function (BaseDisplay) {
       value: function up() {
         var world = renderer.world;
 
-        world.add(this.light);
+        for (var i in this.lights) {
+          world.add(this.lights[i]);
+        }
       },
       writable: true,
       enumerable: true,
@@ -319,7 +352,9 @@ var BallAndStick = (function (BaseDisplay) {
       value: function down() {
         var world = renderer.world;
 
-        world.remove(this.light);
+        for (var i in this.lights) {
+          world.remove(this.lights[i]);
+        }
       },
       writable: true,
       enumerable: true,
@@ -330,11 +365,88 @@ var BallAndStick = (function (BaseDisplay) {
   return BallAndStick;
 })(BaseDisplay);
 
+var OrbitMode = (function () {
+  function OrbitMode(canvas) {
+    this.canvas = canvas;
+  }
+
+  _prototypeProperties(OrbitMode, null, {
+    up: {
+      value: function up() {
+        var interactive = this.canvas.interactive;
+
+        interactive.on("drag", this._dragEvent);
+        interactive.on("wheel", this._wheelEvent);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    down: {
+      value: function down() {
+        var interactive = this.canvas.interactive;
+
+        interactive.off("drag", this._dragEvent);
+        interactive.off("wheel", this._wheelEvent);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    create: {
+      value: function create() {
+        this._wheelEvent = function (delta) {
+          camera.position.z += delta / 100;
+        };
+
+        this._dragEvent = function (point, delta, unproject, e) {
+          if (e.button === 0) {
+            var dx = -delta.x / 500;
+            var dy = -delta.y / 500;
+            var r = Math.sqrt(dx * dx + dy * dy);
+
+            var dq = new LiThree.Math.Quaternion(1, 0, 0, 0);
+            var cq = camera.rotation;
+
+            var rs = Math.sin(r * Math.PI) / r;
+            dq.x = Math.cos(r * Math.PI);
+            dq.y = 0;
+            dq.z = rs * dx;
+            dq.w = -rs * dy;
+
+
+            camera.rotation = new LiThree.Math.Quaternion(1, 0, 0, 0);
+
+            camera.rotation.multiply(dq);
+            camera.rotation.multiply(cq);
+
+            camera.getMatrix();
+          } else if (e.button === 2) {
+            e.preventDefault();
+            camera.position.x += -delta.x / 100;
+            camera.position.y += delta.y / 100;
+          }
+        };
+
+        this.up();
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    }
+  });
+
+  return OrbitMode;
+})();
+
 //
 root.ChemCanvas = {
   Canvas: Canvas,
   Display: {
     BallAndStick: BallAndStick
+  },
+  Mode: {
+    Orbit: OrbitMode
   }
 };
 })

@@ -8,6 +8,9 @@ class Canvas {
     this._display = false;
     this._displays = [];
 
+    this._mode = false;
+    this._modes = [];
+
     this._attachInteractive();
   }
 
@@ -39,12 +42,30 @@ class Canvas {
     }
   }
 
+  setMode(mode) {
+
+    for (var i in this._modes) {
+      let _mode = this._modes[i];
+
+      if (_mode instanceof mode) {
+        this._mode = _mode;
+        this._mode.up();
+        return;
+      }
+    }
+
+    this._mode = new mode(this);
+    this._mode.create();
+    this._modes.push(this._mode);
+  }
+
   setDisplay(display) {
     for (var i in this._displays) {
       let _display = this._displays[i];
 
       if (_display instanceof display) {
         this._display = _display;
+        this._display.up();
         return;
       }
     }
@@ -64,6 +85,7 @@ class Canvas {
   show() {
     this.renderer.draw();
     var _this = this;
+
     requestAnimationFrame(function () {
       _this.show();
     });
