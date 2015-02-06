@@ -14,18 +14,25 @@
 </head>
 <body>
 
+<div style="position: absolute; top: 0; left: 0; right: 0; height: 30px; line-height: 30px; padding: 0 3px; background-color: #1e142f;">
+  <button onclick="canvas.setMode(ChemCanvas.Mode.Orbit)">Camera Handling Mode</button>
+  <button onclick="canvas.setMode(ChemCanvas.Mode.Editor)">Editor Mode</button>
+</div>
+
 <script src="../../mogl/node_modules/gl-matrix/dist/gl-matrix.js"></script>
+<script src="../bower_components/tween.js/build/tween.min.js"></script>
 <script src="../../mogl/dist/lithree.js"></script>
 <script src="../../chemjs/dist/chem.js"></script>
 <script src="../dist/chemcanvas.js"></script>
 <script>
-  var renderer = new LiThree.WebGLRenderer(window.innerWidth, window.innerHeight, null, new LiThree.Color(0, 0, 0));
+  var renderer = new LiThree.WebGLRenderer(window.innerWidth, window.innerHeight, null, new LiThree.Color(0.1, 0.1, 0.15));
   renderer.camera.position.z = -10;
 
-  var chemCanvas = new ChemCanvas.Canvas(renderer);
+  var canvas = new ChemCanvas.Canvas(renderer);
 
-  chemCanvas.setDisplay(ChemCanvas.Display.BallAndStick);
-  chemCanvas.setMode(ChemCanvas.Mode.Orbit);
+  canvas.setDisplay(ChemCanvas.Display.BallAndStick);
+  canvas.setMode(ChemCanvas.Mode.Editor);
+  canvas.setData('tween');
 
   var data = {
     "atoms": [{"atomicNumber": 6, "position": {"x": 0.703, "y": 1.247, "z": -0.255}}, {
@@ -98,8 +105,8 @@
 
   var molecule = Chem.Molecule.readJSON(data);
 
-  chemCanvas.attach(molecule);
-  chemCanvas.show();
+  canvas.attach(molecule);
+  canvas.show();
 
   window.addEventListener('resize', function (e) {
     renderer.setSize(window.innerWidth, window.innerHeight);

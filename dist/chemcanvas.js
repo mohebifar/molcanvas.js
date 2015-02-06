@@ -54,6 +54,10 @@ var Canvas = (function () {
     this._mode = false;
     this._modes = [];
 
+    this._data = {};
+
+    this.orbitHelper = new OrbitHelper();
+
     this._attachInteractive();
   }
 
@@ -92,6 +96,10 @@ var Canvas = (function () {
     },
     setMode: {
       value: function setMode(mode) {
+        if (this._mode) {
+          this._mode.down();
+        }
+
         for (var i in this._modes) {
           var _mode = this._modes[i];
 
@@ -112,6 +120,10 @@ var Canvas = (function () {
     },
     setDisplay: {
       value: function setDisplay(display) {
+        if (this._display) {
+          this._display.down();
+        }
+
         for (var i in this._displays) {
           var _display = this._displays[i];
 
@@ -130,12 +142,34 @@ var Canvas = (function () {
       enumerable: true,
       configurable: true
     },
-    _attachInteractive: {
-      value: function AttachInteractive() {
-        var renderer = this.renderer;
-        var interactive = new LiThree.Interactive(renderer);
-
-        this.interactive = interactive;
+    unsetData: {
+      value: function unsetData(key) {
+        delete this._data[key];
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    setData: {
+      value: function setData(key) {
+        var value = arguments[1] === undefined ? true : arguments[1];
+        this._data[key] = value;
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    getData: {
+      value: function getData(key) {
+        return this._data[key];
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    hasData: {
+      value: function hasData(key) {
+        return typeof this._data[key] !== "undefined";
       },
       writable: true,
       enumerable: true,
@@ -146,9 +180,24 @@ var Canvas = (function () {
         this.renderer.draw();
         var _this = this;
 
+        if (this.getData("tween") && TWEEN) {
+          TWEEN.update();
+        }
+
         requestAnimationFrame(function () {
           _this.show();
         });
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    _attachInteractive: {
+      value: function AttachInteractive() {
+        var renderer = this.renderer;
+        var interactive = new LiThree.Interactive(renderer);
+
+        this.interactive = interactive;
       },
       writable: true,
       enumerable: true,
@@ -157,6 +206,53 @@ var Canvas = (function () {
   });
 
   return Canvas;
+})();
+
+var OrbitHelper = (function () {
+  function OrbitHelper() {
+    this.quaternion = new LiThree.Math.Quaternion();
+    this.matrix = null;
+
+    this.origin = new LiThree.Math.Vector3();
+    this.speed = 1;
+    this._getMatrix();
+  }
+
+  _prototypeProperties(OrbitHelper, null, {
+    rotate: {
+      value: function rotate(dx, dy) {
+        var r = Math.sqrt(dx * dx + dy * dy),
+            dq = new LiThree.Math.Quaternion(1, 0, 0, 0),
+            cq = this.quaternion,
+            rs = Math.sin(r * Math.PI) / r;
+
+        dq.x = Math.cos(r * Math.PI);
+        dq.y = 0;
+        dq.z = rs * dx;
+        dq.w = -rs * dy;
+
+        this.quaternion = new LiThree.Math.Quaternion(1, 0, 0, 0);
+        this.quaternion.multiply(dq);
+        this.quaternion.multiply(cq);
+
+        this._getMatrix();
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    _getMatrix: {
+      value: function GetMatrix() {
+        this.matrix = LiThree.Math.Matrix4.fromRotationTranslationScaleOrigin(this.quaternion, this.origin, new LiThree.Math.Vector3(1, 1, 1), this.origin);
+        return this.matrix;
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    }
+  });
+
+  return OrbitHelper;
 })();
 
 var BaseDisplay = (function () {
@@ -190,19 +286,14 @@ var BallAndStick = (function (BaseDisplay) {
   _prototypeProperties(BallAndStick, null, {
     drawLight: {
       value: function drawLight() {
-        var light2 = new LiThree.Light.Point();
+        var light = new LiThree.Light.Point();
 
-        light2.position.x = 30;
-        light2.position.z = 60;
-        light2.position.y = 30;
+        light.specularColor.rgb(0.2, 0.2, 0.2);
+        light.position.x = -30;
+        light.position.z = -60;
+        light.position.y = -30;
 
-        var light1 = new LiThree.Light.Point();
-
-        light1.position.x = -30;
-        light1.position.z = -60;
-        light1.position.y = -30;
-
-        this.lights = [light1, light2];
+        this.lights = [light];
       },
       writable: true,
       enumerable: true,
@@ -210,22 +301,27 @@ var BallAndStick = (function (BaseDisplay) {
     },
     drawAtom: {
       value: function drawAtom(atom) {
-        var renderer = this.canvas.renderer,
+        var canvas = this.canvas,
+            renderer = canvas.renderer,
             world = renderer.world;
 
         var position = atom.position;
 
-        var radius = Math.exp(-Math.pow(atom.element.atomicRadius - 91, 2) / 500) * atom.element.atomicRadius / 100;
+        var radius = Math.exp(-Math.pow(atom.element.atomicRadius - 91, 2) / 500) * atom.element.atomicRadius / 200;
 
-        var sphere = LiThree.ObjectFactory.Sphere(radius, 50, 50);
+        var sphere = LiThree.ObjectFactory.Sphere(radius, 20, 20);
 
         //sphere.drawingMode = LiThree.Common.drawingMode.LINES;
         sphere.position.copy(position);
-        sphere.position.multiply(2);
 
+        sphere.material.shininess = 10;
         sphere.material.color.hex = atom.element.color;
 
         world.add(sphere);
+
+        renderer.initShape(sphere);
+        this._orbitShader(sphere);
+        sphere.shader.create();
 
         var elements = {
           sphere: sphere,
@@ -235,6 +331,12 @@ var BallAndStick = (function (BaseDisplay) {
         };
 
         atom.setData(BAS_KEY, elements);
+
+        if (canvas.getData("tween")) {
+          sphere.scale.set(0, 0, 0);
+
+          new TWEEN.Tween(sphere.scale).to({ x: 1, y: 1, z: 1 }, 500).easing(TWEEN.Easing.Elastic.Out).start();
+        }
       },
       writable: true,
       enumerable: true,
@@ -272,7 +374,7 @@ var BallAndStick = (function (BaseDisplay) {
             deltaX = endP.x - beginP.x,
             deltaY = endP.y - beginP.y,
             deltaZ = endP.z - beginP.z,
-            d = 0.1;
+            d = 0.07;
 
         var rotation = new LiThree.Math.Quaternion();
         rotation.rotateZ(Math.atan2(deltaY, deltaX));
@@ -305,23 +407,51 @@ var BallAndStick = (function (BaseDisplay) {
       value: function ProgramCylinderShader(cylinder, endC) {
         renderer.initShape(cylinder);
 
-        cylinder.shader.fragmentProgram.clear();
+        var fragmentProgram = cylinder.shader.fragmentProgram,
+            vertexProgram = cylinder.shader.vertexProgram;
 
-        cylinder.shader.fragmentProgram.code("vec3 effectiveColor = halfColor > 0.5 ? vColor : %c2; gl_FragColor = vec4(%lw + effectiveColor, 1.0);", {
-          c2: cylinder.shader.fragmentProgram.uniform("vec3", function () {
+        fragmentProgram.clear();
+
+        fragmentProgram.code("vec3 effectiveColor = halfColor > 0.5 ? vColor : %c2; gl_FragColor = vec4(%lw + effectiveColor, 1.0);", {
+          c2: fragmentProgram.uniform("vec3", function () {
             this.value(endC.toArray());
           }),
-          hc: cylinder.shader.fragmentProgram.varying("float", "halfColor"),
+          hc: fragmentProgram.varying("float", "halfColor"),
           lw: "lightWeight"
         });
 
-        cylinder.shader.vertexProgram.code("%hc = %vp.x < 0.5 ? 1.0 : 0.0;", {
+        this._orbitShader(cylinder);
+
+        vertexProgram.code("%hc = %vp.x > 0.0 ? 1.0 : 0.0;", {
           lw: "lightWeight",
           vp: "vPosition",
-          hc: cylinder.shader.vertexProgram.varying("float", "halfColor")
+          hc: vertexProgram.varying("float", "halfColor")
         });
 
         cylinder.shader.create();
+
+        console.log(vertexProgram.toString());
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    _orbitShader: {
+      value: function OrbitShader(object) {
+        var vertexProgram = object.shader.vertexProgram,
+            orbitHelper = this.canvas.orbitHelper;
+
+        vertexProgram.clear();
+        vertexProgram.code("mat4 mvMatrix = %vm * %om * %mm;\ngl_Position = %p * mvMatrix  * vec4(%vp, 1.0);", {
+          p: "pMatrix",
+          vm: "vMatrix",
+          mm: "mMatrix",
+          vp: "vPosition",
+          om: vertexProgram.uniform("mat4", function () {
+            this.value(orbitHelper.matrix);
+          })
+        });
+        object.shader.initLighting();
       },
       writable: true,
       enumerable: true,
@@ -365,6 +495,82 @@ var BallAndStick = (function (BaseDisplay) {
   return BallAndStick;
 })(BaseDisplay);
 
+var EditorMode = (function () {
+  function EditorMode(canvas) {
+    this.canvas = canvas;
+  }
+
+  _prototypeProperties(EditorMode, null, {
+    up: {
+      value: function up() {
+        var interactive = this.canvas.interactive;
+
+        interactive.on("drag", this._dragEvent);
+        interactive.on("click", this._clickEvent);
+        interactive.on("wheel", this._wheelEvent);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    down: {
+      value: function down() {
+        var interactive = this.canvas.interactive;
+
+        interactive.off("drag", this._dragEvent);
+        interactive.off("click", this._clickEvent);
+        interactive.off("wheel", this._wheelEvent);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    create: {
+      value: function create() {
+        var canvas = this.canvas,
+            camera = canvas.renderer.camera;
+
+        this._wheelEvent = function (delta) {
+          if (canvas.getData("tween")) {
+            var z = camera.position.z + delta / 50;
+            new TWEEN.Tween(camera.position).to({ z: z }, 200).easing(TWEEN.Easing.Cubic.Out).start();
+          } else {
+            camera.position.z += delta / 100;
+          }
+        };
+
+
+        this._clickEvent = function (point, unproject, e) {
+          var pos = unproject(0);
+          pos.unproject(canvas.orbitHelper.matrix.clone());
+          var atom = new Chem.Atom();
+          atom.position = pos;
+
+          atom.atomicNumber = 6;
+
+          var ray = LiThree.Math.Ray.fromPoints(camera.position, unproject(0));
+          var resu = ray.intersectTriangle(new LiThree.Math.Vector3(-1, -1, 0), new LiThree.Math.Vector3(-1, 1, 0), new LiThree.Math.Vector3(1, 0, 0));
+
+          canvas.addAtom(atom);
+        };
+
+        this._dragEvent = function (point, delta, unproject, e) {
+          var position = unproject(0.5);
+
+          if (e.button === 0) {} else if (e.button === 2) {}
+        };
+
+        this.up();
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    }
+  });
+
+  return EditorMode;
+})();
+
 var OrbitMode = (function () {
   function OrbitMode(canvas) {
     this.canvas = canvas;
@@ -395,32 +601,19 @@ var OrbitMode = (function () {
     },
     create: {
       value: function create() {
+        var canvas = this.canvas,
+            camera = canvas.renderer.camera;
+
         this._wheelEvent = function (delta) {
           camera.position.z += delta / 100;
         };
 
         this._dragEvent = function (point, delta, unproject, e) {
           if (e.button === 0) {
-            var dx = -delta.x / 500;
-            var dy = -delta.y / 500;
-            var r = Math.sqrt(dx * dx + dy * dy);
+            var dx = -delta.x / 400,
+                dy = -delta.y / 400;
 
-            var dq = new LiThree.Math.Quaternion(1, 0, 0, 0);
-            var cq = camera.rotation;
-
-            var rs = Math.sin(r * Math.PI) / r;
-            dq.x = Math.cos(r * Math.PI);
-            dq.y = 0;
-            dq.z = rs * dx;
-            dq.w = -rs * dy;
-
-
-            camera.rotation = new LiThree.Math.Quaternion(1, 0, 0, 0);
-
-            camera.rotation.multiply(dq);
-            camera.rotation.multiply(cq);
-
-            camera.getMatrix();
+            canvas.orbitHelper.rotate(dx, dy);
           } else if (e.button === 2) {
             e.preventDefault();
             camera.position.x += -delta.x / 100;
@@ -446,7 +639,8 @@ root.ChemCanvas = {
     BallAndStick: BallAndStick
   },
   Mode: {
-    Orbit: OrbitMode
+    Orbit: OrbitMode,
+    Editor: EditorMode
   }
 };
 })

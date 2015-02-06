@@ -20,34 +20,19 @@ class OrbitMode {
   }
 
   create() {
+    var canvas = this.canvas,
+      camera = canvas.renderer.camera;
+
     this._wheelEvent = function (delta) {
       camera.position.z += delta / 100;
     };
 
     this._dragEvent = function (point, delta, unproject, e) {
       if (e.button === 0) {
+        var dx = -delta.x / 400,
+          dy = -delta.y / 400;
 
-        var dx = -delta.x / 500;
-        var dy = -delta.y / 500;
-        var r = Math.sqrt(dx * dx + dy * dy);
-
-        var dq = new LiThree.Math.Quaternion(1, 0, 0, 0);
-        var cq = camera.rotation;
-
-        var rs = Math.sin(r * Math.PI) / r;
-        dq.x = Math.cos(r * Math.PI);
-        dq.y = 0;
-        dq.z = rs * dx;
-        dq.w = -rs * dy;
-
-
-        camera.rotation = new LiThree.Math.Quaternion(1, 0, 0, 0);
-
-        camera.rotation.multiply(dq);
-        camera.rotation.multiply(cq);
-
-        camera.getMatrix();
-
+        canvas.orbitHelper.rotate(dx, dy);
       } else if (e.button === 2) {
         e.preventDefault();
         camera.position.x += -delta.x / 100;
@@ -57,5 +42,6 @@ class OrbitMode {
 
     this.up();
   }
+
 
 }

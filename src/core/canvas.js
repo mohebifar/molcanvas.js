@@ -11,6 +11,10 @@ class Canvas {
     this._mode = false;
     this._modes = [];
 
+    this._data = {};
+
+    this.orbitHelper = new OrbitHelper();
+
     this._attachInteractive();
   }
 
@@ -43,6 +47,9 @@ class Canvas {
   }
 
   setMode(mode) {
+    if(this._mode) {
+      this._mode.down();
+    }
 
     for (var i in this._modes) {
       let _mode = this._modes[i];
@@ -60,6 +67,10 @@ class Canvas {
   }
 
   setDisplay(display) {
+    if(this._display) {
+      this._display.down();
+    }
+
     for (var i in this._displays) {
       let _display = this._displays[i];
 
@@ -75,20 +86,40 @@ class Canvas {
     this._displays.push(this._display);
   }
 
-  _attachInteractive() {
-    var renderer = this.renderer;
-    var interactive = new LiThree.Interactive(renderer);
+  unsetData(key) {
+    delete this._data[key];
+  }
 
-    this.interactive = interactive;
+  setData(key, value = true) {
+    this._data[key] = value;
+  }
+
+  getData(key) {
+    return this._data[key];
+  }
+
+  hasData(key) {
+    return typeof this._data[key] !== 'undefined';
   }
 
   show() {
     this.renderer.draw();
     var _this = this;
 
+    if(this.getData('tween') && TWEEN) {
+      TWEEN.update();
+    }
+
     requestAnimationFrame(function () {
       _this.show();
     });
+  }
+
+  _attachInteractive() {
+    var renderer = this.renderer;
+    var interactive = new LiThree.Interactive(renderer);
+
+    this.interactive = interactive;
   }
 
 }

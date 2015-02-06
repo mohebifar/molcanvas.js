@@ -4,7 +4,8 @@ root.ChemCanvas = {
     BallAndStick: BallAndStick
   },
   Mode: {
-    Orbit: OrbitMode
+    Orbit: OrbitMode,
+    Editor: EditorMode
   }
 };
 })
