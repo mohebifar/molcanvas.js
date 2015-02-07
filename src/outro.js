@@ -1,4 +1,4 @@
-root.ChemCanvas = {
+root.MolCanvas = {
   Canvas: Canvas,
   Display: {
     BallAndStick: BallAndStick

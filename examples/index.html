@@ -26,91 +26,24 @@
 <script src="../dist/molcanvas.js"></script>
 <script>
   var renderer = new LiThree.WebGLRenderer(window.innerWidth, window.innerHeight);
-  renderer.camera.position.z = -10;
-
-  var canvas = new ChemCanvas.Canvas(renderer);
-
-  canvas.setDisplay(ChemCanvas.Display.BallAndStick);
-  canvas.setMode(ChemCanvas.Mode.Editor);
-  canvas.setData('tween');
-
-  var data = {
-    "atoms": [{"atomicNumber": 6, "position": {"x": 0.703, "y": 1.247, "z": -0.255}}, {
-      "atomicNumber": 6,
-      "position": {"x": -0.742, "y": 1.199, "z": 0.247}
-    }, {"atomicNumber": 6, "position": {"x": -1.367, "y": 0, "z": -0.216}}, {
-      "atomicNumber": 6,
-      "position": {"x": -0.743, "y": -1.199, "z": 0.247}
-    }, {"atomicNumber": 6, "position": {"x": 0.702, "y": -1.248, "z": -0.255}}, {
-      "atomicNumber": 6,
-      "position": {"x": 1.446, "y": -0.001, "z": 0.233}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": 1.1861906056018285, "y": 2.1241461210307295, "z": 0.12188396227338105}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": 0.7098625454177183, "y": 1.272514936474058, "z": -1.3246737322600355}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": -0.7488760148703743, "y": 1.214887578083278, "z": 1.3168599465734525}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": -1.2774478836191316, "y": 2.047210845088837, "z": -0.12547003396444356}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": -1.282546129707893, "y": -0.00009147765645487123, "z": -1.2826618655527733}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": -2.3835713302598123, "y": 0.00036267437108703274, "z": 0.11789010012442083}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": -1.2790636061063254, "y": -2.046988449290124, "z": -0.1250905804757943}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": -0.7497362982451972, "y": -1.2145149204798686, "z": 1.3168663045112017}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": 0.710738474515453, "y": -1.2768841564806293, "z": -1.3245743754258261}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": 1.1837920980602572, "y": -2.1243041002474983, "z": 0.12561463205730544}
-    }, {
-      "atomicNumber": 1,
-      "position": {"x": 2.443831906140062, "y": -0.001447556865339488, "z": -0.1533046553974504}
-    }, {"atomicNumber": 1, "position": {"x": 1.4830680568750125, "y": -0.001062139949764319, "z": 1.3023577302746439}}],
-    "bonds": [{"begin": 0, "end": 1, "order": 3}, {"begin": 1, "end": 2, "order": 1}, {
-      "begin": 2,
-      "end": 3,
-      "order": 1
-    }, {"begin": 3, "end": 4, "order": 1}, {"begin": 4, "end": 5, "order": 1}, {
-      "begin": 0,
-      "end": 5,
-      "order": 1
-    }, {"begin": 0, "end": 6, "order": 1}, {"begin": 0, "end": 7, "order": 1}, {
-      "begin": 1,
-      "end": 8,
-      "order": 1
-    }, {"begin": 1, "end": 9, "order": 1}, {"begin": 2, "end": 10, "order": 1}, {
-      "begin": 2,
-      "end": 11,
-      "order": 1
-    }, {"begin": 3, "end": 12, "order": 1}, {"begin": 3, "end": 13, "order": 1}, {
-      "begin": 4,
-      "end": 14,
-      "order": 1
-    }, {"begin": 4, "end": 15, "order": 1}, {"begin": 5, "end": 16, "order": 1}, {"begin": 5, "end": 17, "order": 1}]
-  };
-  //  var data = {"atoms":[{"atomicNumber":6,"position":{"x":0.703,"y":1.247,"z":-0.255}},{"atomicNumber":6,"position":{"x":-0.742,"y":1.199,"z":0.247}},{"atomicNumber":6,"position":{"x":-1.367,"y":0,"z":-0.216}},{"atomicNumber":6,"position":{"x":-0.743,"y":-1.199,"z":0.247}},{"atomicNumber":6,"position":{"x":0.702,"y":-1.248,"z":-0.255}},{"atomicNumber":6,"position":{"x":1.446,"y":-0.001,"z":0.233}}],"bonds":[{"begin":0,"end":1,"order":1},{"begin":1,"end":2,"order":1},{"begin":2,"end":3,"order":1},{"begin":3,"end":4,"order":1},{"begin":4,"end":5,"order":1},{"begin":0,"end":5,"order":1}]};
-  //  var data = {"atoms":[{"atomicNumber":8,"position":{"x":0.9799413179869491,"y":-0.009454442556232923,"z":-0.09751032146316717}},{"atomicNumber":6,"position":{"x":2.207531317986949,"y":-0.009454442556232923,"z":-0.09751032146316717}},{"atomicNumber":8,"position":{"x":2.8820313179869492,"y":-0.615714347454161,"z":-1.0961592476194795}},{"atomicNumber":6,"position":{"x":4.231031317986949,"y":-0.6157143474541611,"z":-1.0961592476194797}},{"atomicNumber":6,"position":{"x":4.954760746352591,"y":-1.3639562471573599,"z":-2.0659704529816834}},{"atomicNumber":6,"position":{"x":6.327060120440903,"y":-1.5940259428762595,"z":-1.875142354975547}},{"atomicNumber":6,"position":{"x":6.983274858993704,"y":-0.9122013500774666,"z":-0.9829252056442656}},{"atomicNumber":6,"position":{"x":6.325227138831648,"y":0.06015692007088136,"z":-0.21811830683670952}},{"atomicNumber":6,"position":{"x":4.909672189684119,"y":0.0859118613924611,"z":-0.18676756615234535}},{"atomicNumber":6,"position":{"x":4.21200590444969,"y":0.8591881362451482,"z":0.8134531880800109}},{"atomicNumber":8,"position":{"x":4.846257462003598,"y":1.50121770154529,"z":1.6456191613815834}},{"atomicNumber":8,"position":{"x":2.8632589833523294,"y":0.8760639771274698,"z":0.8334018427941962}},{"atomicNumber":6,"position":{"x":2.9485313179869492,"y":0.6565775656414906,"z":0.9995969495254573}},{"atomicNumber":1,"position":{"x":4.4758654742918855,"y":-1.7341730896456713,"z":-2.901807044628572}},{"atomicNumber":1,"position":{"x":6.814879463338818,"y":-2.3043230955573453,"z":-2.443063338553182}},{"atomicNumber":1,"position":{"x":7.989898900370956,"y":-1.0875483931220196,"z":-0.838061635976589}},{"atomicNumber":1,"position":{"x":6.868972449142853,"y":0.7534719918399909,"z":0.31917048773504253}},{"atomicNumber":1,"position":{"x":2.380110586375578,"y":1.4115738627595245,"z":1.5260754953096782}},{"atomicNumber":1,"position":{"x":2.690039122367973,"y":1.694552812754583,"z":1.0258490196266055}},{"atomicNumber":1,"position":{"x":2.690040060834726,"y":0.20093902157259413,"z":1.9325898686489842}},{"atomicNumber":1,"position":{"x":4.000515239995359,"y":0.5551122906370929,"z":0.8324604011463315}}],"bonds":[{"begin":0,"end":1,"order":2},{"begin":1,"end":2,"order":1},{"begin":2,"end":3,"order":1},{"begin":3,"end":4,"order":2},{"begin":4,"end":5,"order":1},{"begin":5,"end":6,"order":2},{"begin":6,"end":7,"order":1},{"begin":7,"end":8,"order":2},{"begin":3,"end":8,"order":1},{"begin":8,"end":9,"order":1},{"begin":9,"end":10,"order":2},{"begin":9,"end":11,"order":1},{"begin":1,"end":12,"order":1},{"begin":4,"end":13,"order":1},{"begin":5,"end":14,"order":1},{"begin":6,"end":15,"order":1},{"begin":7,"end":16,"order":1},{"begin":11,"end":17,"order":1},{"begin":12,"end":18,"order":1},{"begin":12,"end":19,"order":1},{"begin":12,"end":20,"order":1}]};
-
-  var molecule = Chem.Molecule.readJSON(data);
-
-  canvas.attach(molecule);
-  canvas.show();
-
   window.addEventListener('resize', function (e) {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
+
+  var canvas = new MolCanvas.Canvas(renderer);
+
+  canvas.setDisplay(MolCanvas.Display.BallAndStick);
+  canvas.setMode(MolCanvas.Mode.Orbit);
+  canvas.setData('tween');
+
+  var molecules = {
+    cyclohexane: {"atoms":[{"atomicNumber":6,"position":{"x":0.703,"y":1.247,"z":-0.255}},{"atomicNumber":6,"position":{"x":-0.742,"y":1.199,"z":0.247}},{"atomicNumber":6,"position":{"x":-1.367,"y":0,"z":-0.216}},{"atomicNumber":6,"position":{"x":-0.743,"y":-1.199,"z":0.247}},{"atomicNumber":6,"position":{"x":0.702,"y":-1.248,"z":-0.255}},{"atomicNumber":6,"position":{"x":1.446,"y":-0.001,"z":0.233}},{"atomicNumber":1,"position":{"x":1.1861906056018285,"y":2.1241461210307295,"z":0.12188396227338105}},{"atomicNumber":1,"position":{"x":0.7098625454177183,"y":1.272514936474058,"z":-1.3246737322600355}},{"atomicNumber":1,"position":{"x":-0.7488760148703743,"y":1.214887578083278,"z":1.3168599465734525}},{"atomicNumber":1,"position":{"x":-1.2774478836191316,"y":2.047210845088837,"z":-0.12547003396444356}},{"atomicNumber":1,"position":{"x":-1.282546129707893,"y":-0.00009147765645487123,"z":-1.2826618655527733}},{"atomicNumber":1,"position":{"x":-2.3835713302598123,"y":0.00036267437108703274,"z":0.11789010012442083}},{"atomicNumber":1,"position":{"x":-1.2790636061063254,"y":-2.046988449290124,"z":-0.1250905804757943}},{"atomicNumber":1,"position":{"x":-0.7497362982451972,"y":-1.2145149204798686,"z":1.3168663045112017}},{"atomicNumber":1,"position":{"x":0.710738474515453,"y":-1.2768841564806293,"z":-1.3245743754258261}},{"atomicNumber":1,"position":{"x":1.1837920980602572,"y":-2.1243041002474983,"z":0.12561463205730544}},{"atomicNumber":1,"position":{"x":2.443831906140062,"y":-0.001447556865339488,"z":-0.1533046553974504}},{"atomicNumber":1,"position":{"x":1.4830680568750125,"y":-0.001062139949764319,"z":1.3023577302746439}}],"bonds":[{"begin":0,"end":1,"order":3},{"begin":1,"end":2,"order":1},{"begin":2,"end":3,"order":1},{"begin":3,"end":4,"order":1},{"begin":4,"end":5,"order":1},{"begin":0,"end":5,"order":1},{"begin":0,"end":6,"order":1},{"begin":0,"end":7,"order":1},{"begin":1,"end":8,"order":1},{"begin":1,"end":9,"order":1},{"begin":2,"end":10,"order":1},{"begin":2,"end":11,"order":1},{"begin":3,"end":12,"order":1},{"begin":3,"end":13,"order":1},{"begin":4,"end":14,"order":1},{"begin":4,"end":15,"order":1},{"begin":5,"end":16,"order":1},{"begin":5,"end":17,"order":1}]}
+  };
+
+  var molecule = Chem.Molecule.readJSON(molecules.cyclohexane);
+
+  canvas.attach(molecule);
+  canvas.show();
 
   document.body.appendChild(renderer.canvas);
 </script>

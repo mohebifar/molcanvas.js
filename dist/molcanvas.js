@@ -217,6 +217,9 @@ var OrbitHelper = (function () {
 
     this.origin = new LiThree.Math.Vector3();
     this.speed = 1;
+
+    canvas.renderer.camera.position.z = -10;
+
     this._getMatrix();
   }
 
@@ -653,7 +656,7 @@ var OrbitMode = (function () {
 })();
 
 //
-root.ChemCanvas = {
+root.MolCanvas = {
   Canvas: Canvas,
   Display: {
     BallAndStick: BallAndStick
