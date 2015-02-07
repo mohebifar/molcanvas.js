@@ -25,7 +25,7 @@ grunt.initConfig({
         '.tmp/es5/concat.js',
         'src/outro.js'
       ],
-      dest: 'dist/chemcanvas.js'
+      dest: 'dist/molcanvas.js'
     },
     es6: {
       src: ['src/**/*.js', '!src/intro.js', '!src/outro.js'],
@@ -38,7 +38,7 @@ grunt.initConfig({
     },
     build: {
       files: {
-        'dist/chemcanvas.min.js': ['dist/chemcanvas.js']
+        'dist/molcanvas.min.js': ['dist/molcanvas.js']
       }
     }
   },
