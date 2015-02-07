@@ -56,7 +56,7 @@ var Canvas = (function () {
 
     this._data = {};
 
-    this.orbitHelper = new OrbitHelper();
+    this.orbitHelper = new OrbitHelper(this);
 
     this._attachInteractive();
   }
@@ -209,7 +209,9 @@ var Canvas = (function () {
 })();
 
 var OrbitHelper = (function () {
-  function OrbitHelper() {
+  function OrbitHelper(canvas) {
+    this.canvas = canvas;
+
     this.quaternion = new LiThree.Math.Quaternion();
     this.matrix = null;
 
@@ -221,6 +223,9 @@ var OrbitHelper = (function () {
   _prototypeProperties(OrbitHelper, null, {
     rotate: {
       value: function rotate(dx, dy) {
+        dx *= this.speed;
+        dy *= this.speed;
+
         var r = Math.sqrt(dx * dx + dy * dy),
             dq = new LiThree.Math.Quaternion(1, 0, 0, 0),
             cq = this.quaternion,
@@ -236,6 +241,24 @@ var OrbitHelper = (function () {
         this.quaternion.multiply(cq);
 
         this._getMatrix();
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    distance: {
+      value: function distance(delta) {
+        var canvas = this.canvas,
+            camera = canvas.renderer.camera;
+
+        delta *= this.speed / 50;
+
+        if (canvas.getData("tween")) {
+          var z = camera.position.z + delta;
+          new TWEEN.Tween(camera.position).to({ z: z }, 200).easing(TWEEN.Easing.Cubic.Out).start();
+        } else {
+          camera.position.z += delta / 2;
+        }
       },
       writable: true,
       enumerable: true,
@@ -374,7 +397,7 @@ var BallAndStick = (function (BaseDisplay) {
             deltaX = endP.x - beginP.x,
             deltaY = endP.y - beginP.y,
             deltaZ = endP.z - beginP.z,
-            d = 0.07;
+            d = 0.06;
 
         var rotation = new LiThree.Math.Quaternion();
         rotation.rotateZ(Math.atan2(deltaY, deltaX));
@@ -396,7 +419,7 @@ var BallAndStick = (function (BaseDisplay) {
 
           cylinder.rotation = rotation;
           cylinder.position.copy(middle);
-          cylinder.position.y += j * 0.2 - c;
+          cylinder.position.y += j * d * 2.1 - c;
         }
       },
       writable: true,
@@ -410,6 +433,8 @@ var BallAndStick = (function (BaseDisplay) {
         var fragmentProgram = cylinder.shader.fragmentProgram,
             vertexProgram = cylinder.shader.vertexProgram;
 
+        this._orbitShader(cylinder);
+
         fragmentProgram.clear();
 
         fragmentProgram.code("vec3 effectiveColor = halfColor > 0.5 ? vColor : %c2; gl_FragColor = vec4(%lw + effectiveColor, 1.0);", {
@@ -420,17 +445,13 @@ var BallAndStick = (function (BaseDisplay) {
           lw: "lightWeight"
         });
 
-        this._orbitShader(cylinder);
-
-        vertexProgram.code("%hc = %vp.x > 0.0 ? 1.0 : 0.0;", {
+        vertexProgram.code("%hc = %vp.x < 0.5 ? 1.0 : 0.0;", {
           lw: "lightWeight",
           vp: "vPosition",
           hc: vertexProgram.varying("float", "halfColor")
         });
 
         cylinder.shader.create();
-
-        console.log(vertexProgram.toString());
       },
       writable: true,
       enumerable: true,
@@ -528,29 +549,27 @@ var EditorMode = (function () {
     create: {
       value: function create() {
         var canvas = this.canvas,
-            camera = canvas.renderer.camera;
+            camera = canvas.renderer.camera,
+            orbitHelper = canvas.orbitHelper;
 
         this._wheelEvent = function (delta) {
-          if (canvas.getData("tween")) {
-            var z = camera.position.z + delta / 50;
-            new TWEEN.Tween(camera.position).to({ z: z }, 200).easing(TWEEN.Easing.Cubic.Out).start();
-          } else {
-            camera.position.z += delta / 100;
-          }
+          orbitHelper.distance(delta);
         };
 
 
         this._clickEvent = function (point, unproject, e) {
           var pos = unproject(0);
-          pos.unproject(canvas.orbitHelper.matrix.clone());
+          pos.unproject(orbitHelper.matrix.clone());
           var atom = new Chem.Atom();
           atom.position = pos;
 
           atom.atomicNumber = 6;
 
           var ray = LiThree.Math.Ray.fromPoints(camera.position, unproject(0));
-          var resu = ray.intersectTriangle(new LiThree.Math.Vector3(-1, -1, 0), new LiThree.Math.Vector3(-1, 1, 0), new LiThree.Math.Vector3(1, 0, 0));
+          var caster = new LiThree.RayCaster(ray);
+          var resu = caster.intersectTriangle(new LiThree.Math.Vector3(-1, -1, 0), new LiThree.Math.Vector3(-1, 1, 0), new LiThree.Math.Vector3(1, 0, 0));
 
+          console.log(resu);
           canvas.addAtom(atom);
         };
 
@@ -602,10 +621,11 @@ var OrbitMode = (function () {
     create: {
       value: function create() {
         var canvas = this.canvas,
-            camera = canvas.renderer.camera;
+            camera = canvas.renderer.camera,
+            orbitHelper = canvas.orbitHelper;
 
         this._wheelEvent = function (delta) {
-          camera.position.z += delta / 100;
+          orbitHelper.distance(delta);
         };
 
         this._dragEvent = function (point, delta, unproject, e) {
@@ -645,4 +665,4 @@ root.ChemCanvas = {
 };
 })
 (this);
-//# sourceMappingURL=chemcanvas.js.map
+//# sourceMappingURL=molcanvas.js.map

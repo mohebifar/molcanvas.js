@@ -23,35 +23,30 @@ class EditorMode {
 
   create() {
     var canvas = this.canvas,
-      camera = canvas.renderer.camera;
+      camera = canvas.renderer.camera,
+      orbitHelper = canvas.orbitHelper;
 
     this._wheelEvent = function (delta) {
-      if (canvas.getData('tween')) {
-        var z = camera.position.z + delta / 50;
-        new TWEEN.Tween(camera.position)
-          .to({z: z}, 200)
-          .easing(TWEEN.Easing.Cubic.Out)
-          .start();
-      } else {
-        camera.position.z += delta / 100;
-      }
+      orbitHelper.distance(delta);
     };
 
 
     this._clickEvent = function (point, unproject, e) {
       var pos = unproject(0);
-      pos.unproject(canvas.orbitHelper.matrix.clone());
+      pos.unproject(orbitHelper.matrix.clone());
       var atom = new Chem.Atom();
       atom.position = pos;
 
       atom.atomicNumber = 6;
 
       var ray = LiThree.Math.Ray.fromPoints(camera.position, unproject(0));
-      var resu = ray.intersectTriangle(
+      var caster = new LiThree.RayCaster(ray);
+      var resu = caster.intersectTriangle(
         new LiThree.Math.Vector3(-1, -1, 0),
         new LiThree.Math.Vector3(-1, 1, 0),
         new LiThree.Math.Vector3(1, 0, 0));
 
+      console.log(resu);
       canvas.addAtom(atom);
     };
 

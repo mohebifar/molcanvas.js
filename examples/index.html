@@ -6,7 +6,8 @@
   <style>
     body {
       overflow: hidden;
-      background-color: #666;
+      background-color: #222;
+      background-image: radial-gradient(#788D97, #1D2327);
       margin: 0;
       padding: 0;
     }
@@ -19,13 +20,12 @@
   <button onclick="canvas.setMode(ChemCanvas.Mode.Editor)">Editor Mode</button>
 </div>
 
-<script src="../../mogl/node_modules/gl-matrix/dist/gl-matrix.js"></script>
 <script src="../bower_components/tween.js/build/tween.min.js"></script>
-<script src="../../mogl/dist/lithree.js"></script>
+<script src="../../lithree.js/dist/lithree.js"></script>
 <script src="../../chemjs/dist/chem.js"></script>
-<script src="../dist/chemcanvas.js"></script>
+<script src="../dist/molcanvas.js"></script>
 <script>
-  var renderer = new LiThree.WebGLRenderer(window.innerWidth, window.innerHeight, null, new LiThree.Color(0.1, 0.1, 0.15));
+  var renderer = new LiThree.WebGLRenderer(window.innerWidth, window.innerHeight);
   renderer.camera.position.z = -10;
 
   var canvas = new ChemCanvas.Canvas(renderer);
@@ -78,7 +78,7 @@
       "atomicNumber": 1,
       "position": {"x": 2.443831906140062, "y": -0.001447556865339488, "z": -0.1533046553974504}
     }, {"atomicNumber": 1, "position": {"x": 1.4830680568750125, "y": -0.001062139949764319, "z": 1.3023577302746439}}],
-    "bonds": [{"begin": 0, "end": 1, "order": 1}, {"begin": 1, "end": 2, "order": 1}, {
+    "bonds": [{"begin": 0, "end": 1, "order": 3}, {"begin": 1, "end": 2, "order": 1}, {
       "begin": 2,
       "end": 3,
       "order": 1

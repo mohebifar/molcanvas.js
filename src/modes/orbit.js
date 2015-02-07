@@ -21,10 +21,11 @@ class OrbitMode {
 
   create() {
     var canvas = this.canvas,
-      camera = canvas.renderer.camera;
+      camera = canvas.renderer.camera,
+      orbitHelper = canvas.orbitHelper;
 
     this._wheelEvent = function (delta) {
-      camera.position.z += delta / 100;
+      orbitHelper.distance(delta);
     };
 
     this._dragEvent = function (point, delta, unproject, e) {

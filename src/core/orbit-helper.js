@@ -1,7 +1,9 @@
 export default
 class OrbitHelper {
 
-  constructor() {
+  constructor(canvas) {
+    this.canvas = canvas;
+
     this.quaternion = new LiThree.Math.Quaternion();
     this.matrix = null;
 
@@ -11,6 +13,9 @@ class OrbitHelper {
   }
 
   rotate(dx, dy) {
+    dx *= this.speed;
+    dy *= this.speed;
+
     var
       r = Math.sqrt(dx * dx + dy * dy),
       dq = new LiThree.Math.Quaternion(1, 0, 0, 0),
@@ -27,6 +32,23 @@ class OrbitHelper {
     this.quaternion.multiply(cq);
 
     this._getMatrix();
+  }
+
+  distance(delta) {
+    var canvas = this.canvas,
+      camera = canvas.renderer.camera;
+
+    delta *= this.speed / 50;
+
+    if (canvas.getData('tween')) {
+      var z = camera.position.z + delta;
+      new TWEEN.Tween(camera.position)
+        .to({z: z}, 200)
+        .easing(TWEEN.Easing.Cubic.Out)
+        .start();
+    } else {
+      camera.position.z += delta / 2;
+    }
   }
 
   _getMatrix() {

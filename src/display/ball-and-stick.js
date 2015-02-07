@@ -95,7 +95,7 @@ class BallAndStick extends BaseDisplay {
       deltaX = endP.x - beginP.x,
       deltaY = endP.y - beginP.y,
       deltaZ = endP.z - beginP.z,
-      d = 0.07;
+      d = 0.06;
 
     var rotation = new LiThree.Math.Quaternion();
     rotation.rotateZ(Math.atan2(deltaY, deltaX));
@@ -117,7 +117,7 @@ class BallAndStick extends BaseDisplay {
 
       cylinder.rotation = rotation;
       cylinder.position.copy(middle);
-      cylinder.position.y += j * 0.2 - c;
+      cylinder.position.y += j * d * 2.1 - c;
     }
 
   }
@@ -127,6 +127,8 @@ class BallAndStick extends BaseDisplay {
 
     var fragmentProgram = cylinder.shader.fragmentProgram,
       vertexProgram = cylinder.shader.vertexProgram;
+
+    this._orbitShader(cylinder);
 
     fragmentProgram.clear();
 
@@ -138,17 +140,13 @@ class BallAndStick extends BaseDisplay {
       lw: 'lightWeight'
     });
 
-    this._orbitShader(cylinder);
-
-    vertexProgram.code(`%hc = %vp.x > 0.0 ? 1.0 : 0.0;`, {
+    vertexProgram.code(`%hc = %vp.x < 0.5 ? 1.0 : 0.0;`, {
       lw: 'lightWeight',
       vp: 'vPosition',
       hc: vertexProgram.varying('float', 'halfColor')
     });
 
     cylinder.shader.create();
-
-    console.log(vertexProgram.toString());
   }
 
   _orbitShader(object) {

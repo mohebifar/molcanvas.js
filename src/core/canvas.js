@@ -13,7 +13,7 @@ class Canvas {
 
     this._data = {};
 
-    this.orbitHelper = new OrbitHelper();
+    this.orbitHelper = new OrbitHelper(this);
 
     this._attachInteractive();
   }
