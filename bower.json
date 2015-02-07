@@ -1,0 +1,34 @@
+{
+  "name": "molcanvas.js",
+  "version": "1.0.0-alpha",
+  "homepage": "https://github.com/mohebifar/molcanvas.js",
+  "authors": [
+    "Mohamad Mohebifar <netfars@gmail.com>"
+  ],
+  "description": "A WebGL molecule renderer and editor",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals"
+  ],
+  "keywords": [
+    "molecule",
+    "chemical",
+    "webgl",
+    "render",
+    "3d",
+    "mol",
+    "chemistry"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "tween.js": "https://github.com/sole/tween.js.git"
+  }
+}
