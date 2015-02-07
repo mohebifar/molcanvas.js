@@ -48,6 +48,7 @@ var Canvas = (function () {
     this.renderer = renderer;
     renderer.world = new LiThree.World();
     this.atoms = [];
+    this.bonds = [];
     this._display = false;
     this._displays = [];
 
@@ -70,7 +71,18 @@ var Canvas = (function () {
           var atom = molecule.atoms[i];
           this.addAtom(atom);
         }
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    clear: {
+      value: function clear() {
+        var atoms = this.atoms.slice(0, this.atoms.length);
 
+        for (var i in atoms) {
+          this.removeAtom(atoms[i]);
+        }
       },
       writable: true,
       enumerable: true,
@@ -79,16 +91,62 @@ var Canvas = (function () {
     addAtom: {
       value: function addAtom(atom) {
         this.atoms.push(atom);
-        var i;
+        var i,
+            _this = this;
 
-        atom.on("bond", function (bond) {});
+        atom.on("bond", function () {});
+
+        atom.on("delete", function () {
+          for (var i in _this._displays) {
+            var _display = _this._displays[i];
+            _display.removeAtom(atom);
+          }
+
+          _this.atoms.splice(_this.atoms.indexOf(atom), 1);
+        });
 
         this._display.drawAtom(atom);
 
         for (i in atom.bonds) {
           var bond = atom.bonds[i];
+          this.addBond(bond);
           this._display.drawBond(bond);
         }
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    removeAtom: {
+      value: function removeAtom(atom) {
+        atom.emit("delete");
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    addBond: {
+      value: function addBond(bond) {
+        var _this = this;
+
+        _this.bonds.push(bond);
+
+        bond.on("delete", function () {
+          for (var i in _this._displays) {
+            var _display = _this._displays[i];
+            _display.removeBond(bond);
+          }
+
+          _this.bonds.splice(_this.bonds.indexOf(bond), 1);
+        });
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    removeBond: {
+      value: function removeBond(bond) {
+        bond.emit("delete");
       },
       writable: true,
       enumerable: true,
@@ -368,6 +426,21 @@ var BallAndStick = (function (BaseDisplay) {
       enumerable: true,
       configurable: true
     },
+    removeAtom: {
+      value: function removeAtom(atom) {
+        var canvas = this.canvas,
+            renderer = canvas.renderer,
+            world = renderer.world,
+            data = atom.getData(BAS_KEY);
+
+        if (data) {
+          world.remove(data.sphere);
+        }
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
     drawBond: {
       value: function drawBond(bond) {
         var elements;
@@ -423,6 +496,23 @@ var BallAndStick = (function (BaseDisplay) {
           cylinder.rotation = rotation;
           cylinder.position.copy(middle);
           cylinder.position.y += j * d * 2.1 - c;
+        }
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    removeBond: {
+      value: function removeBond(bond) {
+        var canvas = this.canvas,
+            renderer = canvas.renderer,
+            world = renderer.world,
+            data = bond.getData(BAS_KEY);
+
+        if (data) {
+          for (var i in data.cylinders) {
+            world.remove(data.cylinders[i]);
+          }
         }
       },
       writable: true,
@@ -655,6 +745,7 @@ var OrbitMode = (function () {
   return OrbitMode;
 })();
 
+// TODO: draw cylinder dynamically
 //
 root.MolCanvas = {
   Canvas: Canvas,

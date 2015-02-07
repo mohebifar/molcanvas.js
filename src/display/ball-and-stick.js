@@ -64,6 +64,17 @@ class BallAndStick extends BaseDisplay {
     }
   }
 
+  removeAtom(atom) {
+    var canvas = this.canvas,
+      renderer = canvas.renderer,
+      world = renderer.world,
+      data = atom.getData(BAS_KEY);
+
+    if (data) {
+      world.remove(data.sphere);
+    }
+  }
+
   drawBond(bond) {
     var elements;
     if (bond.hasData(BAS_KEY)) {
@@ -120,6 +131,19 @@ class BallAndStick extends BaseDisplay {
       cylinder.position.y += j * d * 2.1 - c;
     }
 
+  }
+
+  removeBond(bond) {
+    var canvas = this.canvas,
+      renderer = canvas.renderer,
+      world = renderer.world,
+      data = bond.getData(BAS_KEY);
+
+    if (data) {
+      for(var i in data.cylinders) {
+        world.remove(data.cylinders[i]);
+      }
+    }
   }
 
   _programCylinderShader(cylinder, endC) {

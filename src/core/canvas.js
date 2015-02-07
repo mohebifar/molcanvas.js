@@ -5,6 +5,7 @@ class Canvas {
     this.renderer = renderer;
     renderer.world = new LiThree.World();
     this.atoms = [];
+    this.bonds = [];
     this._display = false;
     this._displays = [];
 
@@ -27,27 +28,68 @@ class Canvas {
       this.addAtom(atom);
     }
 
+  }
 
+  clear() {
+    var atoms = this.atoms.slice(0, this.atoms.length);
+
+    for (var i in atoms) {
+      this.removeAtom(atoms[i]);
+    }
   }
 
   addAtom(atom) {
     this.atoms.push(atom);
-    var i;
+    var i,
+      _this = this;
 
-    atom.on('bond', function (bond) {
+    atom.on('bond', function () {
+      // TODO: draw cylinder dynamically
+    });
 
+    atom.on('delete', function () {
+      for (var i in _this._displays) {
+        let _display = _this._displays[i];
+        _display.removeAtom(atom);
+      }
+
+      _this.atoms.splice(_this.atoms.indexOf(atom), 1);
     });
 
     this._display.drawAtom(atom);
 
     for (i in atom.bonds) {
       let bond = atom.bonds[i];
+      this.addBond(bond);
       this._display.drawBond(bond);
     }
   }
 
+  removeAtom(atom) {
+    atom.emit('delete');
+  }
+
+  addBond(bond) {
+    var _this = this;
+
+    _this.bonds.push(bond);
+
+    bond.on('delete', function () {
+      for (var i in _this._displays) {
+        let _display = _this._displays[i];
+        _display.removeBond(bond);
+      }
+
+      _this.bonds.splice(_this.bonds.indexOf(bond), 1);
+    });
+  }
+
+  removeBond(bond) {
+    bond.emit('delete');
+  }
+
   setMode(mode) {
-    if(this._mode) {
+    if (this._mode) {
       this._mode.down();
     }
 
@@ -67,7 +109,7 @@ class Canvas {
   }
 
   setDisplay(display) {
-    if(this._display) {
+    if (this._display) {
       this._display.down();
     }
 
@@ -106,7 +148,7 @@ class Canvas {
     this.renderer.draw();
     var _this = this;
 
-    if(this.getData('tween') && TWEEN) {
+    if (this.getData('tween') && TWEEN) {
       TWEEN.update();
     }
 
