@@ -9,6 +9,7 @@ class OrbitMode {
     var interactive = this.canvas.interactive;
 
     interactive.on('drag', this._dragEvent);
+    interactive.on('touchmove', this._dragEvent);
     interactive.on('wheel', this._wheelEvent);
   }
 
@@ -16,6 +17,7 @@ class OrbitMode {
     var interactive = this.canvas.interactive;
 
     interactive.off('drag', this._dragEvent);
+    interactive.off('touchmove', this._dragEvent);
     interactive.off('wheel', this._wheelEvent);
   }
 
@@ -29,7 +31,7 @@ class OrbitMode {
     };
 
     this._dragEvent = function (point, delta, unproject, e) {
-      if (e.button === 0) {
+      if (e instanceof TouchEvent || e.button === 0) {
         var dx = -delta.x / 400,
           dy = -delta.y / 400;
 

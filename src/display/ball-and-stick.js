@@ -22,7 +22,7 @@ class BallAndStick extends BaseDisplay {
     this.lights = [light];
   }
 
-  drawAtom(atom) {
+  drawAtom(atom, callback) {
     var canvas = this.canvas,
       renderer = canvas.renderer,
       world = renderer.world;
@@ -62,6 +62,10 @@ class BallAndStick extends BaseDisplay {
         .easing(TWEEN.Easing.Elastic.Out)
         .start();
     }
+
+    if (callback) {
+      callback(null, atom);
+    }
   }
 
   removeAtom(atom) {
@@ -77,8 +81,10 @@ class BallAndStick extends BaseDisplay {
 
   drawBond(bond) {
     var elements;
+
     if (bond.hasData(BAS_KEY)) {
       elements = bond.getData(BAS_KEY);
+      return;
     } else {
       elements = {
         cylinders: []
@@ -140,7 +146,7 @@ class BallAndStick extends BaseDisplay {
       data = bond.getData(BAS_KEY);
 
     if (data) {
-      for(var i in data.cylinders) {
+      for (var i in data.cylinders) {
         world.remove(data.cylinders[i]);
       }
     }

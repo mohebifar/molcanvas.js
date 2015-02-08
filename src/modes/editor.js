@@ -10,6 +10,7 @@ class EditorMode {
 
     interactive.on('drag', this._dragEvent);
     interactive.on('click', this._clickEvent);
+    interactive.on('tap', this._clickEvent);
     interactive.on('wheel', this._wheelEvent);
   }
 
@@ -58,7 +59,6 @@ class EditorMode {
       } else if (e.button === 2) {
 
       }
-
     };
 
     this.up();

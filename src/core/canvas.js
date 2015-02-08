@@ -21,11 +21,24 @@ class Canvas {
 
   attach(molecule) {
 
-    var i;
+    var _this = this, i, j = 0, count = molecule.atoms.length;
 
     for (i in molecule.atoms) {
       let atom = molecule.atoms[i];
-      this.addAtom(atom);
+
+      this.addAtom(atom, function () {
+
+        if (++j === count) {
+          for (var i in molecule.atoms) {
+            let atom = molecule.atoms[i];
+
+            for (var k in atom.bonds) {
+              _this.addBond(atom.bonds[k]);
+            }
+
+          }
+        }
+      }, false);
     }
 
   }
@@ -38,7 +51,7 @@ class Canvas {
     }
   }
 
-  addAtom(atom) {
+  addAtom(atom, callback = false, drawBonds = true) {
     this.atoms.push(atom);
     var i,
       _this = this;
@@ -56,12 +69,14 @@ class Canvas {
       _this.atoms.splice(_this.atoms.indexOf(atom), 1);
     });
 
-    this._display.drawAtom(atom);
+    setTimeout(function () {
+      _this._display.drawAtom(atom, callback);
+    }, 0);
 
-    for (i in atom.bonds) {
-      let bond = atom.bonds[i];
-      this.addBond(bond);
-      this._display.drawBond(bond);
+    if (drawBonds) {
+      for (i in atom.bonds) {
+        _this.addBond(atom.bonds[i]);
+      }
     }
   }
 
@@ -82,6 +97,11 @@ class Canvas {
 
       _this.bonds.splice(_this.bonds.indexOf(bond), 1);
     });
+
+
+    setTimeout(function () {
+      _this._display.drawBond(bond)
+    }, 0);
   }
 
   removeBond(bond) {

@@ -29,6 +29,6 @@
     "tests"
   ],
   "dependencies": {
-    "tween.js": "https://github.com/sole/tween.js.git"
+    "tween.js": "https://github.com/sole/tween.js.git",
   }
 }

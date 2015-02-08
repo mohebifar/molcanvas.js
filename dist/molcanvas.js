@@ -65,11 +65,30 @@ var Canvas = (function () {
   _prototypeProperties(Canvas, null, {
     attach: {
       value: function attach(molecule) {
-        var i;
+        var _this2 = this;
+
+
+        var _this = this,
+            i,
+            j = 0,
+            count = molecule.atoms.length;
 
         for (i in molecule.atoms) {
-          var atom = molecule.atoms[i];
-          this.addAtom(atom);
+          (function () {
+            var atom = molecule.atoms[i];
+
+            _this2.addAtom(atom, function () {
+              if (++j === count) {
+                for (var i in molecule.atoms) {
+                  var _atom = molecule.atoms[i];
+
+                  for (var k in _atom.bonds) {
+                    _this.addBond(_atom.bonds[k]);
+                  }
+                }
+              }
+            }, false);
+          })();
         }
       },
       writable: true,
@@ -90,6 +109,8 @@ var Canvas = (function () {
     },
     addAtom: {
       value: function addAtom(atom) {
+        var callback = arguments[1] === undefined ? false : arguments[1];
+        var drawBonds = arguments[2] === undefined ? true : arguments[2];
         this.atoms.push(atom);
         var i,
             _this = this;
@@ -105,12 +126,14 @@ var Canvas = (function () {
           _this.atoms.splice(_this.atoms.indexOf(atom), 1);
         });
 
-        this._display.drawAtom(atom);
+        setTimeout(function () {
+          _this._display.drawAtom(atom, callback);
+        }, 0);
 
-        for (i in atom.bonds) {
-          var bond = atom.bonds[i];
-          this.addBond(bond);
-          this._display.drawBond(bond);
+        if (drawBonds) {
+          for (i in atom.bonds) {
+            _this.addBond(atom.bonds[i]);
+          }
         }
       },
       writable: true,
@@ -139,6 +162,11 @@ var Canvas = (function () {
 
           _this.bonds.splice(_this.bonds.indexOf(bond), 1);
         });
+
+
+        setTimeout(function () {
+          _this._display.drawBond(bond);
+        }, 0);
       },
       writable: true,
       enumerable: true,
@@ -292,6 +320,10 @@ var OrbitHelper = (function () {
             cq = this.quaternion,
             rs = Math.sin(r * Math.PI) / r;
 
+        if (r < 0.000001) {
+          return;
+        }
+
         dq.x = Math.cos(r * Math.PI);
         dq.y = 0;
         dq.z = rs * dx;
@@ -384,7 +416,7 @@ var BallAndStick = (function (BaseDisplay) {
       configurable: true
     },
     drawAtom: {
-      value: function drawAtom(atom) {
+      value: function drawAtom(atom, callback) {
         var canvas = this.canvas,
             renderer = canvas.renderer,
             world = renderer.world;
@@ -421,6 +453,10 @@ var BallAndStick = (function (BaseDisplay) {
 
           new TWEEN.Tween(sphere.scale).to({ x: 1, y: 1, z: 1 }, 500).easing(TWEEN.Easing.Elastic.Out).start();
         }
+
+        if (callback) {
+          callback(null, atom);
+        }
       },
       writable: true,
       enumerable: true,
@@ -444,8 +480,10 @@ var BallAndStick = (function (BaseDisplay) {
     drawBond: {
       value: function drawBond(bond) {
         var elements;
+
         if (bond.hasData(BAS_KEY)) {
           elements = bond.getData(BAS_KEY);
+          return;
         } else {
           elements = {
             cylinders: []
@@ -621,6 +659,7 @@ var EditorMode = (function () {
 
         interactive.on("drag", this._dragEvent);
         interactive.on("click", this._clickEvent);
+        interactive.on("tap", this._clickEvent);
         interactive.on("wheel", this._wheelEvent);
       },
       writable: true,
@@ -694,6 +733,7 @@ var OrbitMode = (function () {
         var interactive = this.canvas.interactive;
 
         interactive.on("drag", this._dragEvent);
+        interactive.on("touchmove", this._dragEvent);
         interactive.on("wheel", this._wheelEvent);
       },
       writable: true,
@@ -705,6 +745,7 @@ var OrbitMode = (function () {
         var interactive = this.canvas.interactive;
 
         interactive.off("drag", this._dragEvent);
+        interactive.off("touchmove", this._dragEvent);
         interactive.off("wheel", this._wheelEvent);
       },
       writable: true,
@@ -722,7 +763,7 @@ var OrbitMode = (function () {
         };
 
         this._dragEvent = function (point, delta, unproject, e) {
-          if (e.button === 0) {
+          if (e instanceof TouchEvent || e.button === 0) {
             var dx = -delta.x / 400,
                 dy = -delta.y / 400;
 

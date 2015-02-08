@@ -1,16 +1,20 @@
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
 body {
-    overflow: hidden;
-    background-color: #222;
-    background-image: radial-gradient(#788D97, #1D2327);
     margin: 0;
     padding: 0;
     font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial, sans-serif;
 }
 
-* {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+body > canvas {
+    position: absolute;
+    background-color: #222;
+    background-image: radial-gradient(#788D97, #1D2327);
+    z-index: 1;
 }
 
 .menu {
@@ -22,6 +26,7 @@ body {
     line-height: 50px;
     padding: 0 3px;
     background-color: rgba(255, 255, 255, .3);
+    z-index: 100;
 }
 
 .menu > button,

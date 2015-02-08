@@ -25,6 +25,10 @@ class OrbitHelper {
       cq = this.quaternion,
       rs = Math.sin(r * Math.PI) / r;
 
+    if(r < 0.000001) {
+      return;
+    }
+
     dq.x = Math.cos(r * Math.PI);
     dq.y = 0;
     dq.z = rs * dx;
