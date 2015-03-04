@@ -47,7 +47,6 @@ class EditorMode {
         new LiThree.Math.Vector3(-1, 1, 0),
         new LiThree.Math.Vector3(1, 0, 0));
 
-      console.log(resu);
       canvas.addAtom(atom);
     };
 

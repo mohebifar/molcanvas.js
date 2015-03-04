@@ -1,6 +1,7 @@
 import BaseDisplay from '_base.js';
 
 var BAS_KEY = 'ball-and-stick';
+var BAS_SHADERS = {};
 
 export default
 class BallAndStick extends BaseDisplay {
@@ -8,6 +9,17 @@ class BallAndStick extends BaseDisplay {
   constructor(canvas) {
     this.lights = [];
     super(canvas);
+
+    BAS_SHADERS.sphere = canvas.renderer.createProgrammer();
+    BAS_SHADERS.sphere.vertexProgram.clear();
+    BAS_SHADERS.sphere.fragmentProgram.clear();
+    this._orbitShader(BAS_SHADERS.sphere);
+
+    BAS_SHADERS.cylinder = canvas.renderer.createProgrammer();
+    BAS_SHADERS.cylinder.vertexProgram.clear();
+    BAS_SHADERS.cylinder.fragmentProgram.clear();
+    this._orbitShader(BAS_SHADERS.cylinder);
+    this._programCylinderShader(BAS_SHADERS.cylinder);
   }
 
   drawLight() {
@@ -20,6 +32,9 @@ class BallAndStick extends BaseDisplay {
     light.position.y = -30;
 
     this.lights = [light];
+
+    light.program(BAS_SHADERS.sphere.vertexProgram, BAS_SHADERS.sphere.shaderProgram);
+    light.program(BAS_SHADERS.cylinder.vertexProgram, BAS_SHADERS.cylinder.shaderProgram);
   }
 
   drawAtom(atom, callback) {
@@ -41,9 +56,9 @@ class BallAndStick extends BaseDisplay {
 
     world.add(sphere);
 
+    sphere.shader = BAS_SHADERS.sphere;
     renderer.initShape(sphere);
-    this._orbitShader(sphere);
-    sphere.shader.create();
+
 
     var elements = {
       sphere: sphere,
@@ -114,6 +129,7 @@ class BallAndStick extends BaseDisplay {
       deltaZ = endP.z - beginP.z,
       d = 0.06;
 
+
     var rotation = new LiThree.Math.Quaternion();
     rotation.rotateZ(Math.atan2(deltaY, deltaX));
     rotation.rotateY(-Math.asin(deltaZ / distance));
@@ -122,8 +138,10 @@ class BallAndStick extends BaseDisplay {
 
     for (var i = 0; i < bond.order; i++) {
       let cylinder = LiThree.ObjectFactory.Cylinder(distance, d, d);
+      cylinder.bond = bond;
       cylinder.material.color = beginC;
-      this._programCylinderShader(cylinder, endC);
+      cylinder.shader = BAS_SHADERS.cylinder;
+      //this._programCylinderShader(cylinder, endC);
       elements.cylinders.push(cylinder);
 
       world.add(cylinder);
@@ -152,19 +170,15 @@ class BallAndStick extends BaseDisplay {
     }
   }
 
-  _programCylinderShader(cylinder, endC) {
-    renderer.initShape(cylinder);
+  _programCylinderShader(shader, endC) {
 
-    var fragmentProgram = cylinder.shader.fragmentProgram,
-      vertexProgram = cylinder.shader.vertexProgram;
-
-    this._orbitShader(cylinder);
+    var fragmentProgram = shader.fragmentProgram,
+      vertexProgram = shader.vertexProgram;
 
     fragmentProgram.clear();
-
     fragmentProgram.code(`vec3 effectiveColor = halfColor > 0.5 ? vColor : %c2; gl_FragColor = vec4(%lw + effectiveColor, 1.0);`, {
-      c2: fragmentProgram.uniform('vec3', function () {
-        this.value(endC.toArray());
+      c2: fragmentProgram.uniform('vec3', function (obj) {
+        this.value(obj.bond.end.getData(BAS_KEY).color.toArray());
       }),
       hc: fragmentProgram.varying('float', 'halfColor'),
       lw: 'lightWeight'
@@ -175,16 +189,14 @@ class BallAndStick extends BaseDisplay {
       vp: 'vPosition',
       hc: vertexProgram.varying('float', 'halfColor')
     });
-
-    cylinder.shader.create();
   }
 
-  _orbitShader(object) {
+  _orbitShader(shader) {
     var
-      vertexProgram = object.shader.vertexProgram,
+      fragmentProgram = shader.fragmentProgram,
+      vertexProgram = shader.vertexProgram,
       orbitHelper = this.canvas.orbitHelper;
 
-    vertexProgram.clear();
     vertexProgram.code('mat4 mvMatrix = %vm * %om * %mm;\ngl_Position = %p * mvMatrix  * vec4(%vp, 1.0);', {
       p: 'pMatrix',
       vm: 'vMatrix',
@@ -194,7 +206,8 @@ class BallAndStick extends BaseDisplay {
         this.value(orbitHelper.matrix);
       })
     });
-    object.shader.initLighting();
+
+    shader.initLighting();
   }
 
   create() {
