@@ -1,5 +1,5 @@
 {
-  "name": "chemcanvas",
+  "name": "molcanvas.js",
   "version": "1.0.0-alpha",
   "description": "A WebGL molecule renderer and editor",
   "main": "index.js",
